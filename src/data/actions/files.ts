@@ -1,7 +1,5 @@
-import { ContentType, CourseType, ApiError } from 'thu-learn-lib';
+import { ApiError } from 'thu-learn-lib';
 import { createAction, createAsyncAction } from 'typesafe-actions';
-import dayjs from 'dayjs';
-import { dataSource } from 'data/source';
 import { ThunkResult } from 'data/types/actions';
 import {
   GET_ALL_FILES_FOR_COURSES_FAILURE,
@@ -27,23 +25,9 @@ export function getFilesForCourse(courseId: string): ThunkResult {
     dispatch(getFilesForCourseAction.request());
 
     try {
-      const results = await dataSource.getFileList(
-        courseId,
-        CourseType.STUDENT,
-      );
-      const courseName = getState().courses.names[courseId];
-      const files = results
-        .map<File>(result => ({
-          ...result,
-          courseId,
-          courseName: courseName.name,
-          courseTeacherName: courseName.teacherName,
-        }))
-        .sort(
-          (a, b) =>
-            dayjs(b.uploadTime).unix() - dayjs(a.uploadTime).unix() ||
-            b.id.localeCompare(a.id),
-        );
+      // 后端未提供文件数据，返回空列表（功能开发中）
+      // 如果后端提供文件数据，可以在这里调用新API
+      const files: File[] = [];
       dispatch(getFilesForCourseAction.success({ files, courseId }));
     } catch (err) {
       dispatch(getFilesForCourseAction.failure(serializeError(err)));
@@ -62,28 +46,9 @@ export function getAllFilesForCourses(courseIds: string[]): ThunkResult {
     dispatch(getAllFilesForCoursesAction.request());
 
     try {
-      const results = await dataSource.getAllContents(
-        courseIds,
-        ContentType.FILE,
-      );
-      const courseNames = getState().courses.names;
-      const files = Object.keys(results)
-        .map(courseId => {
-          const filesForCourse = results[courseId];
-          const courseName = courseNames[courseId];
-          return filesForCourse.map<File>(file => ({
-            ...file,
-            courseId,
-            courseName: courseName.name,
-            courseTeacherName: courseName.teacherName,
-          }));
-        })
-        .reduce((a, b) => a.concat(b), [])
-        .sort(
-          (a, b) =>
-            dayjs(b.uploadTime).unix() - dayjs(a.uploadTime).unix() ||
-            b.id.localeCompare(a.id),
-        );
+      // 后端未提供文件数据，返回空列表（功能开发中）
+      // 如果后端提供文件数据，可以在这里调用新API
+      const files: File[] = [];
       dispatch(getAllFilesForCoursesAction.success(files));
     } catch (err) {
       dispatch(getAllFilesForCoursesAction.failure(serializeError(err)));

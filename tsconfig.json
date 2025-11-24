@@ -4,6 +4,7 @@
   "exclude": ["**/node_modules", "**/Pods"],
   "compilerOptions": {
     "lib": ["esnext", "dom"],
+    "esModuleInterop": true,
     "noUnusedLocals": true,
     "baseUrl": "./src"
   }

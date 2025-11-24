@@ -17,6 +17,7 @@ export default function auth(
     fingerPrint: null,
     fingerGenPrint: null,
     fingerGenPrint3: null,
+    token: null,
   },
   action: AuthAction,
 ): AuthState {
@@ -32,6 +33,7 @@ export default function auth(
           fingerPrint: null,
           fingerGenPrint: null,
           fingerGenPrint3: null,
+          token: null,
         };
       }
       return {
@@ -51,6 +53,7 @@ export default function auth(
           fingerPrint: payload.fingerPrint,
           fingerGenPrint: payload.fingerGenPrint,
           fingerGenPrint3: payload.fingerGenPrint3,
+          token: payload.token,
           error: null,
         };
       } else {
@@ -58,6 +61,7 @@ export default function auth(
           ...state,
           loggingIn: false,
           loggedIn: true,
+          token: state.token,
           error: null,
         };
       }
@@ -66,6 +70,7 @@ export default function auth(
         ...state,
         loggingIn: false,
         loggedIn: false,
+        token: null,
         error: action.payload.reason,
       };
     case SET_SSO_IN_PROGRESS:

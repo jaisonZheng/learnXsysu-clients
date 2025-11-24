@@ -57,6 +57,11 @@
 		<true/>
 		<key>NSExceptionDomains</key>
 		<dict>
+			<key>43.136.42.69</key>
+			<dict>
+				<key>NSExceptionAllowsInsecureHTTPLoads</key>
+				<true/>
+			</dict>
 			<key>learn.tsinghua.edu.cn</key>
 			<dict>
 				<key>NSExceptionAllowsInsecureHTTPLoads</key>

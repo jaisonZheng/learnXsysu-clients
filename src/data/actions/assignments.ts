@@ -1,7 +1,8 @@
-import { ApiError, ContentType } from 'thu-learn-lib';
+import { ApiError } from 'thu-learn-lib';
 import { createAction, createAsyncAction } from 'typesafe-actions';
 import dayjs from 'dayjs';
-import { dataSource } from 'data/source';
+import { fetchSysuData } from 'data/api';
+import { adaptSysuDataListToAssignments } from 'data/adapter';
 import { ThunkResult } from 'data/types/actions';
 import {
   GET_ALL_ASSIGNMENTS_FOR_COURSES_FAILURE,
@@ -35,20 +36,9 @@ export function getAssignmentsForCourse(courseId: string): ThunkResult {
     dispatch(getAssignmentsForCourseAction.request());
 
     try {
-      const results = await dataSource.getHomeworkList(courseId);
-      const courseName = getState().courses.names[courseId];
-      const assignments = results
-        .map<Assignment>(result => ({
-          ...result,
-          courseId,
-          courseName: courseName.name,
-          courseTeacherName: courseName.teacherName,
-        }))
-        .sort(
-          (a, b) =>
-            dayjs(b.deadline).unix() - dayjs(a.deadline).unix() ||
-            b.id.localeCompare(a.id),
-        );
+      // 使用新的SYSU后端API代替清华服务器
+      const rawData = await fetchSysuData();
+      const assignments = adaptSysuDataListToAssignments(rawData);
       const sorted = [
         ...assignments
           .filter(a => dayjs(a.deadline).isAfter(dayjs()))
@@ -78,28 +68,34 @@ export function getAllAssignmentsForCourses(courseIds: string[]): ThunkResult {
     dispatch(getAllAssignmentsForCoursesAction.request());
 
     try {
-      const results = await dataSource.getAllContents(
-        courseIds,
-        ContentType.HOMEWORK,
-      );
-      const courseNames = getState().courses.names;
-      const assignments = Object.keys(results)
-        .map(courseId => {
-          const assignmentsForCourse = results[courseId];
-          const courseName = courseNames[courseId];
-          return assignmentsForCourse.map<Assignment>(assignment => ({
-            ...assignment,
-            courseId,
-            courseName: courseName.name,
-            courseTeacherName: courseName.teacherName,
-          }));
-        })
-        .reduce((a, b) => a.concat(b), [])
-        .sort(
-          (a, b) =>
-            dayjs(b.deadline).unix() - dayjs(a.deadline).unix() ||
-            b.id.localeCompare(a.id),
-        );
+      // 使用新的SYSU后端API代替原有的清华服务器爬虫
+      const rawData = await fetchSysuData();
+      const assignments = adaptSysuDataListToAssignments(rawData);
+      
+      // 原有的爬虫代码已注释
+      // const results = await dataSource.getAllContents(
+      //   courseIds,
+      //   ContentType.HOMEWORK,
+      // );
+      // const courseNames = getState().courses.names;
+      // const assignments = Object.keys(results)
+      //   .map(courseId => {
+      //     const assignmentsForCourse = results[courseId];
+      //     const courseName = courseNames[courseId];
+      //     return assignmentsForCourse.map<Assignment>(assignment => ({
+      //       ...assignment,
+      //       courseId,
+      //       courseName: courseName.name,
+      //       courseTeacherName: courseName.teacherName,
+      //     }));
+      //   })
+      //   .reduce((a, b) => a.concat(b), [])
+      //   .sort(
+      //     (a, b) =>
+      //       dayjs(b.deadline).unix() - dayjs(a.deadline).unix() ||
+      //       b.id.localeCompare(a.id),
+      //   );
+      
       const sorted = [
         ...assignments
           .filter(a => dayjs(a.deadline).isAfter(dayjs()))

@@ -1,6 +1,5 @@
 import { useRef, useState } from 'react';
 import {
-  Alert,
   Keyboard,
   KeyboardAvoidingView,
   Platform,
@@ -12,10 +11,9 @@ import { Button, Caption, Switch, TextInput, Text } from 'react-native-paper';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import useToast from 'hooks/useToast';
 import { useAppDispatch, useAppSelector } from 'data/store';
-import { loginWithOfflineMode, setSSOInProgress } from 'data/actions/auth';
+import { login, loginWithOfflineMode } from 'data/actions/auth';
 import { setMockStore } from 'data/actions/root';
 import { setSetting } from 'data/actions/settings';
-import { clearLoginCookies } from 'data/source';
 import Styles from 'constants/Styles';
 import SafeArea from 'components/SafeArea';
 import Logo from 'components/Logo';
@@ -34,8 +32,8 @@ const Login: React.FC<Props> = ({ navigation }) => {
   const savedUsername = useAppSelector(state => state.auth.username);
   const savedPassword = useAppSelector(state => state.auth.password);
 
-  const [username, setUsername] = useState(savedUsername ?? '');
-  const [password, setPassword] = useState(savedPassword ?? '');
+  const [username, setUsername] = useState(savedUsername ?? 'student2025');
+  const [password, setPassword] = useState(savedPassword ?? 'password123');
   const passwordTextInputRef = useRef<any>(null);
 
   const hasCredential = savedUsername && savedPassword;
@@ -62,30 +60,16 @@ const Login: React.FC<Props> = ({ navigation }) => {
       return;
     }
 
-    Alert.alert(
-      t('sso'),
-      t('ssoNote'),
-      [
-        {
-          text: t('cancel'),
-          style: 'cancel',
-        },
-        {
-          text: t('ok'),
-          onPress: async () => {
-            dispatch(setSSOInProgress(true));
-
-            await clearLoginCookies();
-            (navigation.navigate as any)('SSO', {
-              username,
-              password,
-            });
-          },
-        },
-      ],
-      {
-        cancelable: true,
-      },
+    // 绕过真实CAS认证，直接模拟登录成功
+    // 不再连接清华大学服务器，直接在本地设置登录状态
+    dispatch(
+      login({
+        username,
+        password,
+        fingerPrint: `fake-fingerprint-${Date.now()}`,
+        fingerGenPrint: 'fake-genprint',
+        fingerGenPrint3: 'fake-genprint3',
+      }),
     );
   };
 

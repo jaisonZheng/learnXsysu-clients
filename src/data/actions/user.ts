@@ -1,5 +1,4 @@
 import { createAsyncAction } from 'typesafe-actions';
-import { CourseType, Language } from 'thu-learn-lib';
 import {
   GET_USER_INFO_FAILURE,
   GET_USER_INFO_REQUEST,
@@ -7,8 +6,6 @@ import {
 } from 'data/types/constants';
 import { User } from 'data/types/state';
 import { ThunkResult } from 'data/types/actions';
-import { dataSource } from 'data/source';
-import { isLocaleChinese } from 'helpers/i18n';
 
 export const getUserInfoAction = createAsyncAction(
   GET_USER_INFO_REQUEST,
@@ -20,21 +17,13 @@ export function getUserInfo(): ThunkResult {
   return async dispatch => {
     dispatch(getUserInfoAction.request());
 
-    const lang = isLocaleChinese() ? Language.ZH : Language.EN;
-
     try {
-      await dataSource.setLanguage(lang);
-    } catch {}
-
-    try {
-      const userInfo = await dataSource.getUserInfo(CourseType.STUDENT);
-      if (!userInfo) {
-        return;
-      }
-      if (userInfo.department?.includes('(未译)')) {
-        userInfo.department = userInfo.department.replace('(未译)', '');
-      }
-      dispatch(getUserInfoAction.success(userInfo));
+      // 后端未提供用户信息，使用示例数据（功能开发中）
+      const mockUserInfo: User = {
+        name: '测试用户',
+        department: '计算机学院',
+      };
+      dispatch(getUserInfoAction.success(mockUserInfo));
     } catch (err) {
       dispatch(getUserInfoAction.failure(err as Error));
     }

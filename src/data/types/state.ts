@@ -15,6 +15,7 @@ export interface Auth {
   fingerPrint: string | null;
   fingerGenPrint: string | null;
   fingerGenPrint3: string | null;
+  token: string | null;
 }
 export interface AuthState extends Auth {
   loggingIn: boolean;

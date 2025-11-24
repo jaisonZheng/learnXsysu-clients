@@ -13,6 +13,7 @@ const mockStore: PersistAppState = {
     fingerPrint: 'fingerPrint',
     fingerGenPrint: null,
     fingerGenPrint3: null,
+    token: 'mock-token',
     _persist: {
       rehydrated: true,
       version: -1,

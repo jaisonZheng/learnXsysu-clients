@@ -1,7 +1,7 @@
-import { ApiError, ContentType } from 'thu-learn-lib';
+import { ApiError } from 'thu-learn-lib';
 import { createAction, createAsyncAction } from 'typesafe-actions';
-import dayjs from 'dayjs';
-import { dataSource } from 'data/source';
+import { fetchSysuData } from 'data/api';
+import { adaptSysuDataListToNotices } from 'data/adapter';
 import { ThunkResult } from 'data/types/actions';
 import {
   GET_ALL_NOTICES_FOR_COURSES_FAILURE,
@@ -27,20 +27,9 @@ export function getNoticesForCourse(courseId: string): ThunkResult {
     dispatch(getNoticesForCourseAction.request());
 
     try {
-      const results = await dataSource.getNotificationList(courseId);
-      const courseName = getState().courses.names[courseId];
-      const notices = results
-        .map<Notice>(result => ({
-          ...result,
-          courseId,
-          courseName: courseName.name,
-          courseTeacherName: courseName.teacherName,
-        }))
-        .sort(
-          (a, b) =>
-            dayjs(b.publishTime).unix() - dayjs(a.publishTime).unix() ||
-            b.id.localeCompare(a.id),
-        );
+      // 使用新的SYSU后端API代替清华服务器
+      const rawData = await fetchSysuData();
+      const notices = adaptSysuDataListToNotices(rawData);
       dispatch(getNoticesForCourseAction.success({ notices, courseId }));
     } catch (err) {
       dispatch(getNoticesForCourseAction.failure(serializeError(err)));
@@ -59,28 +48,34 @@ export function getAllNoticesForCourses(courseIds: string[]): ThunkResult {
     dispatch(getAllNoticesForCoursesAction.request());
 
     try {
-      const results = await dataSource.getAllContents(
-        courseIds,
-        ContentType.NOTIFICATION,
-      );
-      const courseNames = getState().courses.names;
-      const notices = Object.keys(results)
-        .map(courseId => {
-          const noticesForCourse = results[courseId];
-          const courseName = courseNames[courseId];
-          return noticesForCourse.map<Notice>(notice => ({
-            ...notice,
-            courseId,
-            courseName: courseName.name,
-            courseTeacherName: courseName.teacherName,
-          }));
-        })
-        .reduce((a, b) => a.concat(b), [])
-        .sort(
-          (a, b) =>
-            dayjs(b.publishTime).unix() - dayjs(a.publishTime).unix() ||
-            b.id.localeCompare(a.id),
-        );
+      // 使用新的SYSU后端API代替原有的清华服务器爬虫
+      const rawData = await fetchSysuData();
+      const notices = adaptSysuDataListToNotices(rawData);
+      
+      // 原有的爬虫代码已注释
+      // const results = await dataSource.getAllContents(
+      //   courseIds,
+      //   ContentType.NOTIFICATION,
+      // );
+      // const courseNames = getState().courses.names;
+      // const notices = Object.keys(results)
+      //   .map(courseId => {
+      //     const noticesForCourse = results[courseId];
+      //     const courseName = courseNames[courseId];
+      //     return noticesForCourse.map<Notice>(notice => ({
+      //       ...notice,
+      //       courseId,
+      //       courseName: courseName.name,
+      //       courseTeacherName: courseName.teacherName,
+      //     }));
+      //   })
+      //   .reduce((a, b) => a.concat(b), [])
+      //   .sort(
+      //     (a, b) =>
+      //       dayjs(b.publishTime).unix() - dayjs(a.publishTime).unix() ||
+      //       b.id.localeCompare(a.id),
+      //   );
+      
       dispatch(getAllNoticesForCoursesAction.success(notices));
     } catch (err) {
       dispatch(getAllNoticesForCoursesAction.failure(serializeError(err)));

@@ -1,6 +1,5 @@
 import { createAction, createAsyncAction } from 'typesafe-actions';
 import { ApiError } from 'thu-learn-lib';
-import { dataSource } from 'data/source';
 import { ThunkResult } from 'data/types/actions';
 import {
   GET_ALL_SEMESTERS_FAILURE,
@@ -24,8 +23,15 @@ export function getAllSemesters(): ThunkResult {
     dispatch(getAllSemestersAction.request());
 
     try {
-      const semesters = await dataSource.getSemesterIdList();
-      dispatch(getAllSemestersAction.success(semesters.sort().reverse()));
+      // 后端未提供学期数据，使用示例数据（功能开发中）
+      const mockSemesters = [
+        '2024-2025-1',
+        '2024-2025-2', 
+        '2023-2024-2',
+        '2023-2024-1',
+        '2022-2023-2',
+      ];
+      dispatch(getAllSemestersAction.success(mockSemesters));
     } catch (err) {
       dispatch(getAllSemestersAction.failure(serializeError(err)));
     }
@@ -43,11 +49,12 @@ export function getCurrentSemester(): ThunkResult {
     dispatch(getCurrentSemesterAction.request());
 
     try {
-      const semester = await dataSource.getCurrentSemester();
+      // 后端未提供当前学期数据，使用示例数据（功能开发中）
+      const mockSemester = { id: '2024-2025-1' };
       dispatch(getCurrentSemesterAction.success());
 
       if (!getState().semesters.current) {
-        dispatch(setCurrentSemester(semester.id));
+        dispatch(setCurrentSemester(mockSemester.id));
       }
     } catch (err) {
       dispatch(getCurrentSemesterAction.failure(serializeError(err)));
